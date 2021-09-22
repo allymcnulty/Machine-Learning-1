@@ -1,0 +1,113 @@
+---
+title: "Market Segmentation"
+output:
+  html_document:
+    df_print: paged
+---
+# Market Segmentation 
+## The goal of this report is to provide NutrientH20 interesting market segments identified from an analysis of the tweets by Twitter users who follow the NutrientH20 account. Our team decided to conduct a market segmentation using clustering. NutrientH20's twitter followers were clustered together into 7 groups based on the words they used in their tweets. Our team provides additional information on how NutrientH20 could categroize these clusters to better understand their social-media audience. The report is broken down into an outline of steps taken and the conclusions derived from the analysis.
+
+## Step 1: Cleaning the data
+### In this step, we read the file information into a dataframe and removed the spam and adult columns as these are likely from bots and do not represent actual twitter users. We ran the cluster analysis once including the uncategorized variable and then ran it again without the variable. We found that the clustering was more effective without the variable so we left it out of our final analysis.
+```{r, echo=FALSE,message=FALSE}
+rm(list=ls())
+library(ggplot2)
+library(LICORS)  # for kmeans++
+library(foreach)
+library(mosaic)
+library(tidyverse)
+
+# read in file
+marketing = read.csv('social_marketing.csv', header=TRUE)
+
+summary(marketing)
+
+## Remove spam and adult
+X = marketing[,-c(1,2,6,36,37)]
+summary(X)
+
+
+```
+
+## Step 2: We centered and scaled the data and then extracted the centers and scales from the rescaled data. 
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+# Center and scale the data
+X = scale(X, center=TRUE, scale=TRUE)
+# Extract the centers and scales from the rescaled data (which are named attributes)
+mu = attr(X,"scaled:center")
+sigma = attr(X,"scaled:scale")
+
+marketing_new = scale(marketing[,-c(1)]) # cluster on measurables
+k_grid = seq(2, 20, by=1)
+SSE_grid = foreach(k = k_grid, .combine='c') %do% {
+  cluster_k = kmeans(marketing_new, k, nstart=50)
+  cluster_k$tot.withinss
+}
+```
+## Step 3: Created an Elbow Plot to identify the best number of clusters. The elbow plot showed that k=7 is the best number of clusters to use for the dataset. 
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+#Elbow plot
+fig.width = 9
+fig.height = 5
+fig.align='center'
+plot(k_grid, SSE_grid)
+
+
+```
+## Step 4: We decided to graph the top 10 factors in each cluster based on the size of the centroid computed for each factor in that specific cluster. This created 7 graphs that show the most important factors used in the cluster 
+
+### Cluster 1 "Outdoors Health Enthusiasts": This cluster showed the highest centroid values for health_nutrition, personal_fitness,cooking, and outdoors. All of these features group together to paint the picture of this segment consisting of followers that prioritze healthy eating and living and also enjoy spending time outdoors. These followers can be targeted by NutrientH20 with messenging focused on healthy living for outdoor enthusiasts. 
+
+### Cluster 2 "Milennial Women": This cluster had high feature values for cooking, photo_sharing, fashion, and beauty which leads us to believe this cluster is likely made up of women. We can segment this group further by looking at the next highest value which is photo-sharing. This narrows the age range of the women in this segment by focusing on users that tweet about photo-sharing on social media. These followers are likely to be younger millennials. 
+
+### Cluster 3 "Politics Enthusiasts": This cluster showed the highest centriod values for politics, news, travel, and photo_sharing. These followers emjoy staying up to date on all things polticial and likely intake a large amount of daily news. These followers also have an interest in travel and technology. With this information, NutrientH20 can target these followers by marketing their message on news and travel related apps and websites. 
+
+### Cluster 4 "Families": This cluster consists of users that tweeted frequently about sports_fandom,religion,food, parenting, school,photo_sharing,and family. All of these features can be grouped togther to segment these followers into a group that is likely parents of school-aged children.
+
+### Cluster 5 "Fine Arts Enthusiasts": This cluster showed the highest centroid values for tweets associated with tv_film and art. These followers appreciate the fine arts and NutrientH20 can target these followers with fine arts focused messaging.
+
+### Cluster 6 "Women that Enjoy Shopping and the News": This cluster showed the highest centroid values for photo_sharing, shopping, and current_events. The followers in this cluster are similar to Cluster 2 but they have a stronger affinity for current events and that makes them easier to message to, through outlets where they consume news and potentially shop. An example would be on major social media platforms through sponsored advertisements. 
+
+### Cluster 7 "College Students that enjoy sports video games": This cluster had high centroid values for online-gaming,college-uni, photo_sharing, and sports_playing indicating that these factors were strong predictors for a cluster. The plot below shows that these users can be clustered into a market segment representing college students that enjoy online-gaming entertaintment. NutrientH20 clearly has a segment of Twitter followers that can be clustered based on these attributes found in their tweets. 
+
+
+
+
+```{r,echo=FALSE,warning=FALSE}
+## Elbow looks like it is at k=7, so we will create 7 clusters
+clust1 = kmeans(X, 7, nstart=25)
+#Choose top 10 interests for each cluster to ensure graph is readable
+cluster1 = sort(clust1$center[1,]*sigma + mu,decreasing = TRUE)[0:10] 
+cluster2 = sort(clust1$center[2,]*sigma + mu,decreasing = TRUE)[0:10] 
+cluster3 = sort(clust1$center[3,]*sigma + mu,decreasing = TRUE)[0:10] 
+cluster4 = sort(clust1$center[4,]*sigma + mu,decreasing = TRUE)[0:10] 
+cluster5 = sort(clust1$center[5,]*sigma + mu,decreasing = TRUE)[0:10] 
+cluster6 = sort(clust1$center[6,]*sigma + mu,decreasing = TRUE)[0:10] 
+cluster7 = sort(clust1$center[7,]*sigma + mu,decreasing = TRUE)[0:10]
+```
+
+
+\newpage
+```{r,echo=FALSE,warning=FALSE}
+barplot(cluster1, col = 'green', las=2,cex.names=0.6,main= 'Cluster 1')
+```
+
+```{r,echo=FALSE}
+barplot(cluster2, col = 'blue',las=3, cex.names=0.6, main= 'Cluster 2')
+```
+
+```{r,echo=FALSE}
+barplot(cluster3, col = 'grey', las=3, cex.names=0.6, main= 'Cluster 3')
+barplot(cluster4, col = 'red', las=3, cex.names=0.6,main= 'Cluster 4')
+barplot(cluster5, col = 'purple', las=3, cex.names=0.6, main= 'Cluster 5')
+barplot(cluster6, col = 'black',las=3, cex.names=0.6, main= 'Cluster 6')
+barplot(cluster7, col = 'orange',las=3, cex.names=0.6, main= 'Cluster 7')
+```
+
+
+
+
+
+
+
