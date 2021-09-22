@@ -3,7 +3,11 @@ title: "Market Segmentation"
 output:
   html_document:
     df_print: paged
+    
 ---
+```{r global_options}
+knitr::opts_chunk$set(fig.path='Figs/')
+```
 # Market Segmentation 
 ## The goal of this report is to provide NutrientH20 interesting market segments identified from an analysis of the tweets by Twitter users who follow the NutrientH20 account. Our team decided to conduct a market segmentation using clustering. NutrientH20's twitter followers were clustered together into 7 groups based on the words they used in their tweets. Our team provides additional information on how NutrientH20 could categroize these clusters to better understand their social-media audience. The report is broken down into an outline of steps taken and the conclusions derived from the analysis.
 
